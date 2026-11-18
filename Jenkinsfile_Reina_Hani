@@ -3,6 +3,7 @@ pipeline {
     environment {
         VIRTUAL_ENV = 'venv'
         PYTHON = 'C:\\Users\\ASUS\\AppData\\Local\\Programs\\Python\\Python310\\python.exe'
+        DEPLOY_DIR = 'C:\\jenkins_deploy'
     }
     stages {
         stage('Setup') {
@@ -18,7 +19,7 @@ pipeline {
         stage('Lint') {
             steps {
                 script {
-                    bat 'call %VIRTUAL_ENV%\\Scripts\\activate.bat && flake8 app.py'
+                    bat 'call %VIRTUAL_ENV%\\Scripts\\activate.bat && flake8 app.py deploy.py'
                 }
             }
         }
@@ -29,16 +30,32 @@ pipeline {
                 }
             }
         }
+        stage('Coverage') {
+            steps {
+                script {
+                    bat 'call %VIRTUAL_ENV%\\Scripts\\activate.bat && coverage run --source=app -m pytest && coverage report -m && coverage html'
+                }
+            }
+        }
+        stage('Security Scan') {
+            steps {
+                script {
+                    bat 'call %VIRTUAL_ENV%\\Scripts\\activate.bat && bandit app.py deploy.py && bandit app.py deploy.py -f txt -o bandit_report.txt'
+                }
+            }
+        }
         stage('Deploy') {
             steps {
                 script {
                     echo "Deploying application..."
+                    bat 'call %VIRTUAL_ENV%\\Scripts\\activate.bat && python deploy.py'
                 }
             }
         }
     }
     post {
         always {
+            archiveArtifacts artifacts: 'htmlcov/**, bandit_report.txt', allowEmptyArchive: true
             cleanWs()
         }
     }
