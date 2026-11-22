@@ -1,8 +1,5 @@
 # EECE 435L – Lab 10: Jenkins CI/CD Pipeline for Python
 
-**Author:** Reina Hani
-
-A simple Python project with a Jenkins pipeline that automatically sets up the environment, lints, tests, measures code coverage, runs a security scan, and deploys the application.
 
 ## Project Structure
 
